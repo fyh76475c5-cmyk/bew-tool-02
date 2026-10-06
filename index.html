@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kurse">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0d7377">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Bewertung Kurse</title>
+<style>
+  :root { --bg:#f4f6f7; --card:#fff; --text:#1d2b2c; --muted:#66777a; --line:#dde4e6; --accent:#0d7377; --accent-d:#095558; --soft:#e4f1f1; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#14191a; --card:#1d2425; --text:#e6eeee; --muted:#93a5a8; --line:#304041; --accent:#27a3a8; --accent-d:#1f8a8e; --soft:#233a3b; }
+  }
+  * { box-sizing:border-box; }
+  html, body { overflow-x:hidden; max-width:100%; }
+  body { margin:0; font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--text); }
+  button, input, textarea { touch-action:manipulation; font:inherit; }
+  header { background:var(--accent); color:#fff; padding:12px 14px; padding-top:calc(12px + env(safe-area-inset-top)); display:flex; align-items:center; gap:10px; position:sticky; top:0; z-index:5; }
+  header .t { flex:1; min-width:0; }
+  header h1 { margin:0; font-size:18px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  header p { margin:0; font-size:12px; opacity:.85; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  header .back { background:rgba(255,255,255,.18); color:#fff; border:none; border-radius:8px; padding:8px 12px; cursor:pointer; font-size:16px; }
+  main { max-width:760px; margin:0 auto; padding:12px 10px 40px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px; margin-bottom:10px; }
+  .row { display:flex; align-items:center; gap:10px; }
+  .grow { flex:1; min-width:0; }
+  .muted { color:var(--muted); font-size:13px; }
+  h2 { margin:0 0 4px; font-size:17px; }
+  h3 { margin:0 0 6px; font-size:15px; }
+  .btn { background:var(--accent); color:#fff; border:none; padding:10px 14px; border-radius:8px; cursor:pointer; font-weight:600; }
+  .btn.ghost { background:transparent; color:var(--accent); border:1px solid var(--accent); }
+  .btn.small { padding:7px 10px; font-size:13px; }
+  .btn.danger { background:transparent; color:#b3261e; border:1px solid #b3261e; }
+  @media (prefers-color-scheme: dark) { .btn.danger { color:#ff8a80; border-color:#ff8a80; } }
+  .course { display:block; width:100%; text-align:left; background:var(--card); color:var(--text); border:1px solid var(--line); border-radius:12px; padding:12px; margin-bottom:10px; cursor:pointer; }
+  .course b { font-size:17px; }
+  .bar { height:5px; background:var(--line); border-radius:3px; margin-top:8px; overflow:hidden; }
+  .bar i { display:block; height:100%; background:var(--accent); }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+  .chip { border:1px solid var(--line); background:var(--card); color:var(--text); padding:6px 11px; border-radius:16px; cursor:pointer; font-size:13px; }
+  .chip.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .list { background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  .li { display:grid; grid-template-columns:1fr repeat(5, 44px); align-items:center; width:100%; padding:5px 10px; border-top:1px solid var(--line); color:var(--text); }
+  .li .nm { padding:8px 0 !important; }
+  .li:first-child, .lh + .li { border-top:none; }
+  .lh { display:grid; grid-template-columns:1fr repeat(5, 44px); padding:8px 10px; font-size:11px; color:var(--muted); text-align:center; background:var(--bg); }
+  .lh span:first-child { text-align:left; }
+  .li > button { background:transparent; border:none; color:inherit; padding:0; text-align:inherit; cursor:pointer; }
+  .li > button.v { height:34px; border-radius:6px; }
+  .li > button.v:active, .li > button.nm:active { background:var(--soft); }
+  .li .n { font-weight:600; font-size:16px; letter-spacing:.3px; }
+  .li .k { color:var(--muted); font-size:12px; }
+  .li .v { text-align:center; font-size:14px; }
+  .li .v.avg { font-weight:700; color:var(--accent); }
+  .li > button small, .lv small { display:block; font-size:10px; color:var(--muted); line-height:1; }
+  .qrow { display:flex; align-items:center; gap:6px; padding:8px 10px; background:var(--soft); border-top:1px solid var(--line); }
+  .qrow .muted { width:40px; }
+  .lv { flex:1; padding:10px 0; border:1px solid var(--accent); background:var(--card); color:var(--accent); border-radius:8px; font-weight:700; font-size:16px; cursor:pointer; }
+  .lv:active { background:var(--accent); color:#fff; }
+  #toast { position:fixed; left:12px; right:12px; bottom:calc(14px + env(safe-area-inset-bottom)); max-width:560px; margin:0 auto; display:none; align-items:center; justify-content:space-between; gap:12px; background:#1d2b2c; color:#fff; padding:11px 14px; border-radius:10px; font-size:14px; z-index:20; }
+  #toast button { background:transparent; border:1px solid #fff; color:#fff; border-radius:6px; padding:5px 10px; cursor:pointer; }
+  .tiles { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .tile { background:var(--card); color:var(--text); border:1px solid var(--line); border-radius:12px; padding:14px 12px; text-align:left; cursor:pointer; }
+  .tile .a { font-size:13px; color:var(--muted); }
+  .tile .g { font-size:26px; font-weight:700; color:var(--accent); }
+  table { border-collapse:collapse; width:100%; table-layout:fixed; }
+  th, td { padding:7px 2px; text-align:center; border-bottom:1px solid var(--line); }
+  th { font-size:11px; color:var(--muted); font-weight:600; }
+  th small { display:block; font-weight:400; }
+  th:nth-child(1) { width:26%; } th:nth-child(2) { width:15%; } th:nth-child(n+3) { width:11.8%; }
+  td.kk, th.kk { text-align:left; } td.kk { font-size:12.5px; line-height:1.25; padding-right:4px; word-break:break-word; hyphens:auto; }
+  input.w { width:100%; max-width:46px; padding:4px 0; text-align:center; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--text); font-size:16px; }
+  .cell { width:100%; max-width:34px; height:32px; border:2px solid var(--line); border-radius:6px; background:var(--bg); cursor:pointer; padding:0; color:#fff; font-size:17px; line-height:1; }
+  .cell.on { background:var(--accent); border-color:var(--accent); }
+  .cell.on::after { content:"✓"; }
+  .grade { font-size:34px; font-weight:700; color:var(--accent); }
+  textarea { width:100%; min-height:90px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text); padding:8px; font-size:14px; }
+  .nav { display:flex; gap:8px; margin-bottom:10px; }
+  .nav .btn { flex:1; }
+  .msg { background:var(--soft); border-radius:8px; padding:8px 10px; font-size:13px; margin-top:8px; }
+  details summary { cursor:pointer; font-weight:600; padding:4px 0; }
+</style>
+</head>
+<body>
+<header id="hd"></header>
+<main id="view"></main>
+
+<script>
+const LEVELS = [["E",6],["D",4],["C",3],["B",2],["A",1]];
+const DEFAULTS = {
+  "Experiment": [["Durchführung",3],["Ablauf",2.5],["Ergebnis",3],["Umgang mit Schwierigkeiten",1.5]],
+  "Vortrag": [["Verständlichkeit",2],["Struktur",2],["Fachsprache im Vortrag",1.5],["Reaktion auf Rückfragen",1.5],["Vortragsweise",1],["Medieneinsatz",1],["Quellenangabe",1]],
+  "Schriftl. Ausarbeitung": [["Inhalt",3],["Aufbau",1.5],["Fachsprache",1],["Sprache & Ausdruck",1],["Rechtschreibung & Grammatik",1],["Umfang & Eigenständigkeit",1.5],["Quellenangabe",1]],
+  "Mündl. Mitarbeit": [["Quantität",1],["Fachliche Qualität",1],["Fachsprache",1],["Zuhören & Eingehen auf andere",1],["Mitarbeit bei Aufgaben & Experimenten",1],["Kontinuität",1]]
+};
+const SHEETS = Object.keys(DEFAULTS);
+const SHORT = { "Experiment":"Exp", "Vortrag":"Vor", "Schriftl. Ausarbeitung":"Schr", "Mündl. Mitarbeit":"Mdl" };
+
+const STORE = "bewertung-kurse-v2", OLD_STORE = "bewertung-kurse-v1"; /* v1-Daten werden beim ersten Start übernommen und zu Einträgen */
+let state = load();
+let view = { page:"courses" };
+
+/* ---------- Daten ---------- */
+function freshW() { const w = {}; for (const s of SHEETS) w[s] = DEFAULTS[s].map(r => r[1]); return w; }
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem(STORE) || localStorage.getItem(OLD_STORE));
+    if (d && d.s) {
+      const w = freshW();
+      for (const s of SHEETS) if (d.w && d.w[s] && d.w[s].length === w[s].length) w[s] = d.w[s];
+      migrate(d.s);
+      return { w, s: d.s, meta: d.meta || {} };
+    }
+  } catch (e) {}
+  return { w: freshW(), s: {}, meta: {} };
+}
+function save() { state.meta.dirty = true; store(); }
+function store() {
+  const txt = JSON.stringify(state);
+  try { localStorage.setItem(STORE, txt); } catch (e) { alert("Speichern im Browser nicht möglich."); }
+  idbPut(txt);
+}
+
+/* Zweitspeicher (IndexedDB) und dauerhafter Speicher */
+let idb = null;
+function idbOpen() {
+  return new Promise(res => {
+    try {
+      const q = indexedDB.open("bewertung-kurse-2", 1);
+      q.onupgradeneeded = () => q.result.createObjectStore("kv");
+      q.onsuccess = () => res(q.result);
+      q.onerror = () => res(null);
+    } catch (e) { res(null); }
+  });
+}
+function idbPut(txt) { if (idb) try { idb.transaction("kv", "readwrite").objectStore("kv").put(txt, "state"); } catch (e) {} }
+function idbGet() {
+  return new Promise(res => {
+    if (!idb) return res(null);
+    try { const q = idb.transaction("kv").objectStore("kv").get("state"); q.onsuccess = () => res(q.result || null); q.onerror = () => res(null); }
+    catch (e) { res(null); }
+  });
+}
+let persisted = null;
+async function initStorage() {
+  idb = await idbOpen();
+  try { if (navigator.storage && navigator.storage.persist) persisted = await navigator.storage.persist(); } catch (e) {}
+  const copy = await idbGet();
+  if (!Object.keys(state.s).length && copy) {
+    try {
+      const d = JSON.parse(copy);
+      if (d && d.s && Object.keys(d.s).length) {
+        localStorage.setItem(STORE, copy); state = load();
+        view = { page:"courses" }; render();
+        $("view").insertAdjacentHTML("afterbegin", `<div class="msg">Daten aus dem Zweitspeicher wiederhergestellt (${Object.keys(state.s).length} Schüler).</div>`);
+        return;
+      }
+    } catch (e) {}
+  }
+  idbPut(JSON.stringify(state));
+  render();
+}
+const standalone = () => navigator.standalone === true || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+function backupAge() { const t = state.meta.lastBackup; return t ? Math.floor((Date.now() - t) / 86400000) : null; }
+
+/* Kennung: Vorname(2) Nachname(2) Kurs Stammklasse Abschluss; „Sch“ und „St“ zählen als ein Buchstabe */
+const U = "(?:Sch|St|[A-Za-zÄÖÜäöüß])";
+const ID_RX = new RegExp(`^(${U}${U})(${U}${U})([A-Za-z]{2}\\d{2}|\\d{1,2}[a-z])(\\d{1,2}[a-z])(20\\d\\d)$`);
+const infoCache = {};
+function info(id) {
+  if (infoCache[id]) return infoCache[id];
+  const m = ID_RX.exec(id);
+  return infoCache[id] = m ? { vn:m[1], nn:m[2], kurs:m[3], kl:m[4], jahr:m[5] } : { vn:"", nn:"", kurs:"Sonstige", kl:"", jahr:"" };
+}
+/* Jeder Eintrag: { t: Zeitstempel, sel:[Notenwert je Kriterium] } (volles Blatt) oder { t, q: Notenwert } (Schnellnote) */
+function migrate(students) {
+  for (const id in students) {
+    const r = students[id].r = students[id].r || {};
+    for (const sh of Object.keys(r)) {
+      const a = r[sh];
+      if (!Array.isArray(a)) { r[sh] = []; continue; }
+      if (a.length && a.every(x => x === null || typeof x === "number"))
+        r[sh] = a.some(x => x !== null) ? [{ t:Date.now(), sel:a }] : [];
+    }
+  }
+}
+function entries(id, sheet) {
+  const st = state.s[id];
+  st.r = st.r || {};
+  return st.r[sheet] = st.r[sheet] || [];
+}
+function entryResult(e, sheet) {
+  if (e.q != null) return e.q;
+  let ws = 0, sum = 0;
+  DEFAULTS[sheet].forEach((_, i) => { if (e.sel && e.sel[i] != null) { const w = state.w[sheet][i]; ws += w; sum += w * e.sel[i]; } });
+  return ws > 0 ? sum / ws : null;
+}
+function calc(id, sheet) {
+  const res = ((state.s[id].r || {})[sheet] || []).map(e => entryResult(e, sheet)).filter(x => x !== null);
+  return { avg: res.length ? res.reduce((a, b) => a + b, 0) / res.length : null, n: res.length };
+}
+function total(id) {
+  const v = SHEETS.map(s => calc(id, s).avg).filter(x => x !== null);
+  return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
+}
+function rated(id) { return SHEETS.some(s => calc(id, s).n > 0); }
+
+function courses() {
+  const g = {};
+  for (const id of Object.keys(state.s)) { const i = info(id); (g[i.kurs] = g[i.kurs] || []).push(id); }
+  return Object.entries(g).sort((a, b) => info(a[1][0]).jahr.localeCompare(info(b[1][0]).jahr) || a[0].localeCompare(b[0]));
+}
+function members(kurs, kl) {
+  return Object.keys(state.s).filter(id => info(id).kurs === kurs && (!kl || info(id).kl === kl))
+    .sort((a, b) => info(a).kl.localeCompare(info(b).kl) || a.localeCompare(b, "de"));
+}
+
+/* ---------- Helfer ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+const fmt = n => n === null ? "–" : (Math.round(n * 100) / 100).toLocaleString("de-DE", { maximumFractionDigits: 2 });
+function go(v) { view = v; render(); window.scrollTo(0, 0); }
+function head(title, sub, back) {
+  $("hd").innerHTML = (back ? `<button class="back" id="bk" aria-label="Zurück">‹</button>` : "")
+    + `<div class="t"><h1>${esc(title)}</h1>${sub ? `<p>${esc(sub)}</p>` : ""}</div>`;
+  if (back) $("bk").onclick = back;
+}
+
+/* ---------- Seiten ---------- */
+function render() {
+  ({ courses:pageCourses, course:pageCourse, student:pageStudent, sheet:pageSheet }[view.page])();
+}
+
+function pageCourses() {
+  head("Bewertung Kurse", "Kurs wählen");
+  const cs = courses();
+  let h = "";
+  const age = backupAge();
+  if (cs.length && state.meta.dirty && (age === null || age >= 7))
+    h += `<div class="card" style="border-color:#b3261e"><b>Sicherung empfohlen</b><div class="muted" style="margin:4px 0 8px">${age === null ? "Noch keine Sicherung angelegt." : "Letzte Sicherung vor " + age + " Tagen."} Seit der letzten Sicherung hast du Daten geändert.</div><button class="btn small" id="bnr">Jetzt sichern</button></div>`;
+  if (!cs.length) h += `<div class="card"><h2>Noch keine Schüler</h2><div class="muted">Importiere unten deine Liste mit den Kennungen. Sie bleibt nur auf diesem Gerät.</div></div>`;
+  for (const [kurs, ids] of cs) {
+    const done = ids.filter(rated).length, i = info(ids[0]);
+    const kls = [...new Set(ids.map(x => info(x).kl))].sort().join(", ");
+    h += `<button class="course" data-kurs="${esc(kurs)}"><div class="row"><b class="grow">${esc(kurs)}</b><span class="muted">${ids.length} Schüler</span></div>
+      <div class="muted">${i.jahr ? "Abschluss " + i.jahr + " · " : ""}Klassen ${esc(kls)}</div>
+      <div class="bar"><i style="width:${Math.round(100 * done / ids.length)}%"></i></div>
+      <div class="muted" style="margin-top:4px">${done} von ${ids.length} mit Bewertung</div></button>`;
+  }
+  h += `<div class="card"><h3>Schülerliste importieren</h3>
+    <div class="muted" style="margin-bottom:8px">Eine Kennung pro Zeile. Bereits vorhandene Schüler behalten ihre Bewertungen.</div>
+    <input type="file" id="fl" accept=".txt,.md,.csv,text/plain" style="margin-bottom:8px;width:100%">
+    <textarea id="ta" placeholder="…oder Kennungen hier einfügen"></textarea>
+    <label class="muted" style="display:block;margin:8px 0"><input type="checkbox" id="rm"> Schüler entfernen, die nicht in der Liste stehen</label>
+    <button class="btn" id="imp">Importieren</button><div id="impmsg"></div></div>
+  <details class="card"><summary>Sicherung und Export</summary>
+    <div class="muted" style="margin:6px 0">Alle Daten liegen nur auf diesem Gerät. Letzte Sicherung: ${age === null ? "noch keine" : age === 0 ? "heute" : "vor " + age + " Tagen"}.</div>
+    <div class="muted" style="margin:6px 0">Speicherschutz: ${persisted ? "dauerhaft angefordert und erteilt" : "vom Browser nicht zugesichert"} · Zweitspeicher: ${idb ? "aktiv" : "nicht verfügbar"} · ${standalone() ? "als App installiert" : "im Browser geöffnet (auf dem iPhone besser über den Home-Bildschirm nutzen)"}.</div>
+    <div class="row" style="flex-wrap:wrap">
+      <button class="btn ghost small" id="exj">Sicherung (.json)</button>
+      <button class="btn ghost small" id="exc">Ergebnisse (.csv)</button>
+      <button class="btn ghost small" id="exe">Alle Einträge (.csv)</button>
+      <label class="btn ghost small" style="margin:0">Sicherung laden<input type="file" id="inj" accept=".json,application/json" hidden></label>
+    </div><div id="bkmsg"></div>
+    <hr style="border:none;border-top:1px solid var(--line);margin:12px 0">
+    <button class="btn danger small" id="wipe">Alle Schülerdaten löschen</button></details>`;
+  $("view").innerHTML = h;
+
+  $("view").querySelectorAll(".course").forEach(b => b.onclick = () => go({ page:"course", kurs:b.dataset.kurs, kl:"" }));
+  $("fl").onchange = e => { const f = e.target.files[0]; if (f) f.text().then(t => { $("ta").value = t; }); };
+  $("imp").onclick = doImport;
+  if ($("bnr")) $("bnr").onclick = () => outFile("bewertung-sicherung-" + stamp() + ".json", JSON.stringify(state), "application/json");
+  $("exj").onclick = () => outFile("bewertung-sicherung-" + stamp() + ".json", JSON.stringify(state), "application/json");
+  $("exc").onclick = () => outFile("bewertung-ergebnisse-" + stamp() + ".csv", csv(), "text/csv");
+  $("exe").onclick = () => outFile("bewertung-eintraege-" + stamp() + ".csv", csvEntries(), "text/csv");
+  $("inj").onchange = restore;
+  $("wipe").onclick = () => {
+    if (confirm("Alle Schüler und Bewertungen auf diesem Gerät löschen?") && confirm("Wirklich? Das kann nicht rückgängig gemacht werden.")) { state.s = {}; save(); render(); }
+  };
+}
+
+function doImport() {
+  const lines = $("ta").value.split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith("#"));
+  if (!lines.length) { $("impmsg").innerHTML = `<div class="msg">Keine Kennungen gefunden. Wähle eine Datei oder füge Text ein.</div>`; return; }
+  const list = [...new Set(lines)];
+  let neu = 0, alt = 0, unk = [];
+  for (const id of list) {
+    if (!ID_RX.test(id)) unk.push(id);
+    if (state.s[id]) alt++; else { state.s[id] = { r:{} }; neu++; }
+  }
+  let removed = 0;
+  if ($("rm").checked) for (const id of Object.keys(state.s)) if (!list.includes(id)) {
+    if (rated(id) && !confirm(`„${id}“ steht nicht in der Liste, hat aber Bewertungen. Trotzdem entfernen?`)) continue;
+    delete state.s[id]; removed++;
+  }
+  save();
+  render();
+  $("impmsg").innerHTML = `<div class="msg">${neu} neu, ${alt} schon vorhanden${removed ? ", " + removed + " entfernt" : ""}.`
+    + (unk.length ? ` ${unk.length} Kennung(en) nicht nach dem Schema erkannt (unter „Sonstige“ einsortiert).` : "") + `</div>`;
+}
+
+let quick = false, qArea = "Mündl. Mitarbeit", openId = null, lastAdded = null;
+function nm(id) { return info(id).vn + info(id).nn || id; }
+function pageCourse() {
+  const ids = members(view.kurs, view.kl), all = members(view.kurs), i = info(all[0] || "");
+  head("Kurs " + view.kurs, (i.jahr ? "Abschluss " + i.jahr + " · " : "") + all.length + " Schüler", () => { quick = false; openId = null; go({ page:"courses" }); });
+  const kls = [...new Set(all.map(x => info(x).kl))].sort();
+  let h = `<div class="chips"><button class="chip${view.kl ? "" : " on"}" data-kl="">Alle</button>`
+    + kls.map(k => `<button class="chip${view.kl === k ? " on" : ""}" data-kl="${esc(k)}">${esc(k)}</button>`).join("")
+    + `<button class="chip${quick ? " on" : ""}" id="qm" style="margin-left:auto">⚡ Schnell</button></div>`;
+  if (quick) h += `<div class="card" style="padding:8px 10px"><div class="muted" style="margin-bottom:6px">Schnellnote für Bereich:</div><div class="chips" style="margin:0">`
+    + SHEETS.map(s => `<button class="chip${qArea === s ? " on" : ""}" data-qa="${esc(s)}">${esc(s)}</button>`).join("") + `</div>
+    <div class="muted" style="margin-top:6px">Namen antippen, dann Stufe wählen. Ø antippen: Übersicht des Schülers.</div></div>`;
+  h += `<div class="list"><div class="lh"><span>Schüler</span>${SHEETS.map(s => `<span>${SHORT[s]}</span>`).join("")}<span>Ø</span></div>`;
+  for (const id of ids) {
+    h += `<div class="li"><button class="nm" data-id="${esc(id)}"><span class="n">${esc(nm(id))}</span> <span class="k">${esc(info(id).kl)}</span></button>`
+      + SHEETS.map(s => { const c = calc(id, s); return `<button class="v" data-id="${esc(id)}" data-s="${esc(s)}" aria-label="${esc(s)} bewerten">${fmt(c.avg)}${c.n > 1 ? `<small>×${c.n}</small>` : ""}</button>`; }).join("")
+      + `<button class="v avg" data-id="${esc(id)}" data-o="1">${fmt(total(id))}</button></div>`;
+    if (quick && openId === id) h += `<div class="qrow"><span class="muted">${esc(SHORT[qArea])}</span>`
+      + LEVELS.map(([l, n]) => `<button class="lv" data-id="${esc(id)}" data-v="${n}">${l}<small>${n}</small></button>`).join("") + `</div>`;
+  }
+  h += `</div><div class="muted" style="margin-top:8px">Auf eine Note tippen: Bewertungsblatt mit allen Einträgen. Auf den Namen oder Ø tippen: Übersicht des Schülers. ×n = Anzahl der Einträge.</div>`;
+  $("view").innerHTML = h;
+  $("view").querySelectorAll(".chip[data-kl]").forEach(b => b.onclick = () => go({ page:"course", kurs:view.kurs, kl:b.dataset.kl }));
+  $("qm").onclick = () => { quick = !quick; openId = null; render(); };
+  $("view").querySelectorAll("[data-qa]").forEach(b => b.onclick = () => { qArea = b.dataset.qa; render(); });
+  $("view").querySelectorAll(".li button").forEach(b => b.onclick = () => {
+    const id = b.dataset.id;
+    if (b.dataset.s) return go({ page:"sheet", kurs:view.kurs, kl:view.kl, id, sheet:b.dataset.s, from:"course", entry:null });
+    if (quick && !b.dataset.o) { openId = openId === id ? null : id; const y = scrollY; render(); scrollTo(0, y); return; }
+    go({ page:"student", kurs:view.kurs, kl:view.kl, id });
+  });
+  $("view").querySelectorAll(".lv").forEach(b => b.onclick = () => addQuick(b.dataset.id, qArea, +b.dataset.v));
+}
+function addQuick(id, area, v) {
+  const e = { t:Date.now(), q:v };
+  entries(id, area).push(e); save();
+  lastAdded = { id, area, e }; openId = null;
+  const y = scrollY; render(); scrollTo(0, y);
+  toast(`${nm(id)} · ${SHORT[area]} · ${LEVELS.find(l => l[1] === v)[0]} gespeichert`, true);
+}
+let toastTimer;
+function toast(text, undo) {
+  let t = $("toast");
+  if (!t) { t = document.createElement("div"); t.id = "toast"; document.body.appendChild(t); }
+  t.innerHTML = `<span>${esc(text)}</span>` + (undo ? `<button id="undo">Rückgängig</button>` : "");
+  t.style.display = "flex";
+  if (undo) $("undo").onclick = () => {
+    if (lastAdded) { const a = entries(lastAdded.id, lastAdded.area), k = a.indexOf(lastAdded.e); if (k >= 0) a.splice(k, 1); save(); lastAdded = null; const y = scrollY; render(); scrollTo(0, y); }
+    t.style.display = "none";
+  };
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.style.display = "none"; }, 6000);
+}
+
+function neighbours() {
+  const ids = members(view.kurs, view.kl), k = ids.indexOf(view.id);
+  return { prev: k > 0 ? ids[k - 1] : null, next: k >= 0 && k < ids.length - 1 ? ids[k + 1] : null };
+}
+function navBar(target) {
+  const { prev, next } = neighbours();
+  return `<div class="nav"><button class="btn ghost" id="pv"${prev ? "" : " style='visibility:hidden'"}>‹ ${prev ? esc(info(prev).vn + info(prev).nn) : ""}</button>
+    <button class="btn ghost" id="nx"${next ? "" : " style='visibility:hidden'"}>${next ? esc(info(next).vn + info(next).nn) : ""} ›</button></div>`;
+}
+function wireNav(page, extra) {
+  const { prev, next } = neighbours();
+  if ($("pv") && prev) $("pv").onclick = () => go({ ...view, page, id:prev, ...extra, entry:null });
+  if ($("nx") && next) $("nx").onclick = () => go({ ...view, page, id:next, ...extra, entry:null });
+}
+
+function pageStudent() {
+  const id = view.id, i = info(id);
+  head(i.vn + i.nn || id, `Kurs ${i.kurs} · Klasse ${i.kl}${i.jahr ? " · " + i.jahr : ""}`, () => go({ page:"course", kurs:view.kurs, kl:view.kl }));
+  let h = navBar() + `<div class="tiles">`;
+  for (const s of SHEETS) {
+    const c = calc(id, s);
+    h += `<button class="tile" data-s="${esc(s)}"><div class="a">${esc(s)}</div><div class="g">${fmt(c.avg)}</div><div class="a">${c.n === 0 ? "kein Eintrag" : c.n === 1 ? "1 Eintrag" : c.n + " Einträge"}</div></button>`;
+  }
+  h += `</div><div class="card" style="margin-top:10px"><div class="muted">Ø der bewerteten Bereiche</div><div class="grade">${fmt(total(id))}</div></div>
+    <div class="muted" style="margin:6px 0">Kennung: ${esc(id)}</div>
+    <button class="btn danger small" id="rst">Bewertungen dieses Schülers löschen</button>`;
+  $("view").innerHTML = h;
+  $("view").querySelectorAll(".tile").forEach(b => b.onclick = () => go({ ...view, page:"sheet", sheet:b.dataset.s, from:"student", entry:null }));
+  $("rst").onclick = () => { if (confirm("Alle Bewertungen von " + id + " löschen?")) { state.s[id].r = {}; save(); render(); } };
+  wireNav("student");
+}
+
+const dt = t => new Date(t).toLocaleString("de-DE", { weekday:"short", day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" });
+function pageSheet() {
+  const id = view.id, sheet = view.sheet, i = info(id), list = entries(id, sheet), crit = DEFAULTS[sheet];
+  head(sheet, nm(id) + " · " + i.kurs + " · " + i.kl, () => view.from === "course" ? go({ page:"course", kurs:view.kurs, kl:view.kl }) : go({ ...view, page:"student" }));
+  const cur = view.entry != null ? list[view.entry] : null;
+  const sel = cur && cur.sel ? cur.sel : crit.map(() => null);
+  let h = navBar() + `<div class="card"><div class="row" style="margin-bottom:6px"><b class="grow">${cur ? "Eintrag vom " + dt(cur.t) : "Neuer Eintrag"}</b>`
+    + (cur ? `<button class="btn ghost small" id="newe">+ Neuer Eintrag</button>` : "") + `</div>`
+    + `<div class="muted" style="margin-bottom:6px">E = 6 · D = 4 · C = 3 · B = 2 · A = 1${cur ? "" : " · Das erste Kästchen legt den Eintrag an."}</div>`
+    + `<table><thead><tr><th class="kk">Kriterium</th><th>Gew.</th>` + LEVELS.map(([l, n]) => `<th>${l}<small>${n}</small></th>`).join("") + `</tr></thead><tbody>`;
+  crit.forEach((c, k) => {
+    h += `<tr><td class="kk">${esc(c[0])}</td><td><input class="w" type="number" min="0" step="0.5" value="${state.w[sheet][k]}" data-k="${k}"></td>`;
+    for (const [, n] of LEVELS) h += `<td><button class="cell${sel[k] === n ? " on" : ""}" data-k="${k}" data-n="${n}" aria-label="${esc(c[0])}: ${n}"></button></td>`;
+    h += `</tr>`;
+  });
+  const c = calc(id, sheet);
+  h += `</tbody></table><div class="row" style="margin-top:12px"><div class="grow"><div class="muted">Dieser Eintrag</div><div class="grade">${fmt(cur ? entryResult(cur, sheet) : null)}</div></div>
+    <div class="grow"><div class="muted">Bereichsnote (${c.n} ${c.n === 1 ? "Eintrag" : "Einträge"})</div><div class="grade">${fmt(c.avg)}</div></div></div>
+    <div class="muted" style="margin-top:8px">Die Gewichtung der Kriterien gilt für alle Schüler und Einträge.</div></div>`;
+  h += `<div class="card"><h3>Verlauf</h3>` + (list.length ? "" : `<div class="muted">Noch keine Einträge.</div>`);
+  list.map((e, k) => [e, k]).reverse().forEach(([e, k]) => {
+    h += `<div class="row" style="padding:7px 0;border-top:1px solid var(--line)"><div class="grow"><div>${dt(e.t)}</div><div class="muted">${e.q != null ? "Schnellnote " + LEVELS.find(l => l[1] === e.q)[0] : (e.sel.filter(x => x != null).length) + " Kriterien"}</div></div>
+      <b style="min-width:40px;text-align:right">${fmt(entryResult(e, sheet))}</b>
+      ${e.q == null ? `<button class="btn ghost small" data-ed="${k}">Ändern</button>` : ""}
+      <button class="btn danger small" data-del="${k}" aria-label="Eintrag löschen">✕</button></div>`;
+  });
+  h += `</div>`;
+  $("view").innerHTML = h;
+  const keep = fn => { fn(); save(); const y = scrollY; render(); scrollTo(0, y); };
+  $("view").querySelectorAll(".cell").forEach(b => b.onclick = () => keep(() => {
+    const k = +b.dataset.k, n = +b.dataset.n;
+    if (view.entry == null) { list.push({ t:Date.now(), sel:crit.map(() => null) }); view.entry = list.length - 1; }
+    const e = list[view.entry];
+    e.sel[k] = e.sel[k] === n ? null : n;
+    if (e.sel.every(x => x === null)) { list.splice(view.entry, 1); view.entry = null; }
+  }));
+  $("view").querySelectorAll("input.w").forEach(inp => inp.onchange = () => keep(() => {
+    const w = parseFloat(String(inp.value).replace(",", "."));
+    state.w[sheet][+inp.dataset.k] = isNaN(w) || w < 0 ? 0 : w;
+  }));
+  if ($("newe")) $("newe").onclick = () => { view.entry = null; render(); window.scrollTo(0, 0); };
+  $("view").querySelectorAll("[data-ed]").forEach(b => b.onclick = () => { view.entry = +b.dataset.ed; render(); window.scrollTo(0, 0); });
+  $("view").querySelectorAll("[data-del]").forEach(b => b.onclick = () => {
+    if (!confirm("Diesen Eintrag löschen?")) return;
+    keep(() => { const k = +b.dataset.del; list.splice(k, 1); if (view.entry === k) view.entry = null; else if (view.entry > k) view.entry--; });
+  });
+  wireNav("sheet", { sheet });
+}
+
+/* ---------- Export / Sicherung ---------- */
+function stamp() { return new Date().toISOString().slice(0, 10); }
+async function outFile(name, text, type) {
+  const file = new File([text], name, { type });
+  const done = () => { if (type === "application/json") { state.meta.lastBackup = Date.now(); state.meta.dirty = false; store(); render(); } };
+  try {
+    if (navigator.canShare && navigator.canShare({ files:[file] })) { await navigator.share({ files:[file], title:name }); done(); return; }
+  } catch (e) { if (e && e.name === "AbortError") return; }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  done();
+}
+function csv() {
+  const head = ["Kennung","Kurs","Klasse","Abschluss",...SHEETS,"Durchschnitt"];
+  const rows = Object.keys(state.s).sort().map(id => {
+    const i = info(id);
+    return [id, i.kurs, i.kl, i.jahr, ...SHEETS.map(s => fmt(calc(id, s).avg)), fmt(total(id))].join(";");
+  });
+  return "﻿" + [head.join(";"), ...rows].join("\n");
+}
+function csvEntries() {
+  const rows = [];
+  for (const id of Object.keys(state.s).sort()) for (const sh of SHEETS) for (const e of (state.s[id].r || {})[sh] || []) {
+    const d = new Date(e.t), r = entryResult(e, sh);
+    rows.push([id, info(id).kurs, sh, d.toLocaleDateString("de-DE"), d.toLocaleTimeString("de-DE", { hour:"2-digit", minute:"2-digit" }), e.q != null ? "Schnell" : "Blatt", fmt(r)].join(";"));
+  }
+  return "\ufeff" + ["Kennung;Kurs;Bereich;Datum;Uhrzeit;Art;Note", ...rows].join("\n");
+}
+function restore(e) {
+  const f = e.target.files[0]; if (!f) return;
+  f.text().then(t => {
+    try {
+      const d = JSON.parse(t);
+      if (!d || !d.s || typeof d.s !== "object") throw 0;
+      if (!confirm("Die Sicherung ersetzt alle Daten auf diesem Gerät. Fortfahren?")) return;
+      localStorage.setItem(STORE, JSON.stringify(d));
+      for (const k in infoCache) delete infoCache[k];
+      state = load(); save(); render();
+      $("bkmsg").innerHTML = `<div class="msg">Sicherung geladen: ${Object.keys(state.s).length} Schüler.</div>`;
+    } catch (err) { alert("Diese Datei ist keine gültige Sicherung."); }
+  });
+}
+
+render();
+initStorage();
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>
